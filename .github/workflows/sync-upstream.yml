@@ -1,0 +1,41 @@
+name: Auto Sync with Upstream
+
+on:
+  schedule:
+    # 设置为每周一凌晨 1:00 (UTC时间)
+    # 对应北京时间 (UTC+8)：每周一上午 09:00
+    - cron: '0 1 * * 1'
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 必须设置为 0 才能获取所有分支历史
+          fetch-depth: 0
+
+      - name: Set Git Config
+        run: |
+          git config user.name "Sync-Bot"
+          git config user.email "bot@github.com"
+
+      - name: Sync from Upstream
+        run: |
+          # 1. 添加原作者的仓库为上游源
+          git remote add upstream https://github.com/Guovin/iptv-api.git
+          
+          # 2. 获取上游仓库的所有更新
+          git fetch upstream
+          
+          # 3. 切换到主分支 (请根据实际情况选择 main 或 master)
+          # 如果报错，请尝试将 'main' 改为 'master'
+          git checkout main
+          
+          # 4. 合并上游的 main 分支
+          git merge upstream/main
+          
+          # 5. 推送到你的 Fork 仓库
+          git push origin main
