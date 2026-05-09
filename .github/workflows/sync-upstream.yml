@@ -1,23 +1,26 @@
 name: Auto Sync with Upstream
 
+# 1. 添加 permissions 请求写入权限
+permissions:
+  contents: write
+
 on:
   schedule:
-    # 设置为每周一凌晨 1:00 (北京时间)
-    # 由于 Actions 使用 UTC 时间，北京时间 UTC+8，所以需要减去 8 小时
-    # 01:00 - 8小时 = 前一天的 17:00 (UTC时间)
-    # 对应：每周日凌晨 17:00 UTC (即周一早上 01:00 北京时间)
+    # 当前时间是周六 05-09，如果你想周一运行
+    # 对应北京时间 周一 01:00 (UTC时间 周日 17:00)
     - cron: '0 17 * * 0'
-  # 允许手动触发
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      # 2. 修改 checkout 步骤，传入 token
       - uses: actions/checkout@v4
         with:
-          # 必须设置为 0 才能获取所有分支历史
           fetch-depth: 0
+          # 传入默认的 GITHUB_TOKEN，配合上面的 permissions 实现读写
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set Git Config
         run: |
@@ -26,17 +29,13 @@ jobs:
 
       - name: Sync from Upstream
         run: |
-          # 1. 添加原作者的仓库为上游源
           git remote add upstream https://github.com/Guovin/iptv-api.git
-          
-          # 2. 获取上游仓库的所有更新
           git fetch upstream
           
-          # 3. 切换到主分支 (修正：根据 Guovin/iptv-api 项目实际情况，使用 master)
+          # 确保检出的是 master 分支（根据网页解析，该项目主分支为 master）
           git checkout master
           
-          # 4. 合并上游的 master 分支 (修正：原项目使用 master 而不是 main)
           git merge upstream/master
           
-          # 5. 推送到你的 Fork 仓库
+          # 这里会尝试推送到你的仓库，现在有权限了
           git push origin master
