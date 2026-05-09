@@ -2,9 +2,11 @@ name: Auto Sync with Upstream
 
 on:
   schedule:
-    # 设置为每周一凌晨 1:00 (UTC时间)
-    # 对应北京时间 (UTC+8)：每周一上午 09:00
-    - cron: '0 1 * * 1'
+    # 设置为每周一凌晨 1:00 (北京时间)
+    # 由于 Actions 使用 UTC 时间，北京时间 UTC+8，所以需要减去 8 小时
+    # 01:00 - 8小时 = 前一天的 17:00 (UTC时间)
+    # 对应：每周日凌晨 17:00 UTC (即周一早上 01:00 北京时间)
+    - cron: '0 17 * * 0'
   # 允许手动触发
   workflow_dispatch:
 
@@ -30,12 +32,11 @@ jobs:
           # 2. 获取上游仓库的所有更新
           git fetch upstream
           
-          # 3. 切换到主分支 (请根据实际情况选择 main 或 master)
-          # 如果报错，请尝试将 'main' 改为 'master'
-          git checkout main
+          # 3. 切换到主分支 (修正：根据 Guovin/iptv-api 项目实际情况，使用 master)
+          git checkout master
           
-          # 4. 合并上游的 main 分支
-          git merge upstream/main
+          # 4. 合并上游的 master 分支 (修正：原项目使用 master 而不是 main)
+          git merge upstream/master
           
           # 5. 推送到你的 Fork 仓库
-          git push origin main
+          git push origin master
